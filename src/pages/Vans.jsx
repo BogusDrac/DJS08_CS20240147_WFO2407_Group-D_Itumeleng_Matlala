@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 const Vans = () => {
+    const [searchParams, setSearchParams] = useSearchParams()
     const [vans, setVans] = useState([])
+
+    const typeFilter = searchParams.get("type")
+    
+    const displayVans = typeFilter
+        ? vans.filter(van => van.type === typeFilter)
+        : vans
 
     useEffect(() => {
         fetch("/api/vans")
@@ -10,7 +17,7 @@ const Vans = () => {
         .then(data => setVans(data.vans))
     }, [])
 
-    const vanElements = vans.map(van => (
+    const vanElements = displayVans.map(van => (
         <div className="van-tile" key={van.id}>
             <Link to={`/vans/${van.id}`}>
                 <img src={van.imageUrl} alt="" />
@@ -27,7 +34,39 @@ const Vans = () => {
   return (
     <div className="van-list-container">
         <h1>Explore our van options</h1>
-        <div className="van-list">{vanElements}</div>
+        <div className="van-list-filter-buttons">
+            <button 
+                onClick={() => setSearchParams({type: "simple"})}
+                className="van-type simple"
+            >
+                Simple
+            </button>
+
+            <button 
+                onClick={() => setSearchParams({type: "luxury"})}
+                className="van-type luxury"
+            >
+                Luxury
+            </button>
+
+            <button 
+                onClick={() => setSearchParams({type: "rugged"})}
+                className="van-type rugged"
+            >
+                Rugged
+            </button>
+
+            <button 
+                onClick={() => setSearchParams({})}
+                className="van-type simple"
+            >
+                clear filter
+            </button>                        
+            
+        </div>
+        <div className="van-list">
+            {vanElements}
+        </div>
     </div>
   );
 }
