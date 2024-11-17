@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react"
+import { Link, useSearchParams } from "react-router-dom"
+import { getVans } from "../../api"
+
 
 const Vans = () => {
     const [searchParams, setSearchParams] = useSearchParams()
     const [vans, setVans] = useState([])
+    const [Loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
     const typeFilter = searchParams.get("type")
     
@@ -12,9 +16,19 @@ const Vans = () => {
         : vans
 
     useEffect(() => {
-        fetch("/api/vans")
-        .then(response => response.json())
-        .then(data => setVans(data.vans))
+       async function loadVans() {
+            setLoading(true)
+            try {
+                const data = await getVans()
+                setVans(data)
+            } catch (error) {
+                setError(error)
+            }finally{
+                setLoading(false)
+            }
+       }
+
+       loadVans()
     }, [])
 
     const vanElements = displayVans.map(van => (
@@ -49,6 +63,14 @@ const Vans = () => {
             }
             return prevParams
         })
+    }
+
+    if (Loading) {
+        return <h1 aria-live="polite">Loading...</h1>
+    }
+
+    if (error) {
+        return <h1 aria-live="assertive">There was an error: {error.message}</h1>
     }
 
   return (

@@ -1,16 +1,29 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, Outlet, NavLink } from 'react-router-dom'
+import { getHostVans } from '../../../api'
 
 
 const HostVanDetail = () => {
     const { id } = useParams()
     const [currentVan, setCurrentVan] = useState(null)
+    const [loading, setLoading] = React.useState(false)
+    const [error, setError] = React.useState(null)
 
     useEffect(() => {
-        fetch(`/api/vans/${id}`)
-            .then(res => res.json())
-            .then(data => setCurrentVan(data.vans))
-    }, [])
+        async function loadVans() {
+            setLoading(true)
+            try {
+                const data = await getHostVans(id)
+                setCurrentVan(data)
+            } catch (err) {
+                setError(err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadVans()
+    }, [id])
 
     if (!currentVan) {
         return <h1>Loading...</h1>
